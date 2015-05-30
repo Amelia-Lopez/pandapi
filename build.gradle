@@ -1,15 +1,20 @@
-apply plugin: 'java'
-apply plugin: 'idea'
+apply plugin: 'java'    // builds production code, produces a JAR
+apply plugin: 'groovy'  // build and run test code
+apply plugin: 'idea'    // build IntelliJ project files
 
 // support Java 7+
 sourceCompatibility = 1.7
 
+/*********************************************
+ *                    JAR                    *
+ *********************************************/
+
 // customize the generated JAR
 jar {
-    // contents of JAR manifest file
+    // contents of the JAR manifest file
     manifest {
-        attributes 'Implementation-Title': 'Pandapi',
-                   'Implementation-Version': semantic_version,
+        attributes 'Implementation-Title': 'Panda API',
+                   'Implementation-Version': semantic_version,    // from gradle.properties
                    'Main-Class': 'com.mariolopezjr.pandapi.web.application.PandapiWebApplication'
     }
 
@@ -18,33 +23,120 @@ jar {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
     } {
-        // necessary to avoid a SecurityException when starting: Invalid signature file digest for Manifest main attributes
+        // necessary to avoid a SecurityException when starting the server:
+        // "Invalid signature file digest for Manifest main attributes"
         exclude "META-INF/*.SF"
         exclude "META-INF/*.DSA"
         exclude "META-INF/*.RSA"
     }
 }
 
+/*********************************************
+ *             Integration Tests             *
+ *********************************************/
+
+// add a custom "integrationtest" source directory (i.e. pandapi/src/integrationtest/)
+sourceSets {
+    integrationtest {
+        // tell it where the source code is for our integration tests
+        groovy.srcDir 'src/integrationtest/groovy'
+
+        // add the output classes of the "main" and "test" source sets to the integration test classpath
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
+configurations {
+    // add the necessary "main" and "test" dependencies to the integration test dependencies
+    integrationtestCompile.extendsFrom runtime, testCompile
+    integrationtestRuntime.extendsFrom testRuntime
+}
+
+// add an "integrationTest" Gradle task (runs the integration tests)
+task integrationTest(dependsOn: 'jar', type: Test) {
+    // location of the code to run and the classpath for the integration tests
+    testClassesDir = sourceSets.integrationtest.output.classesDir
+    classpath = sourceSets.integrationtest.runtimeClasspath
+}
+
+// do not run the integration tests during normal builds
+check.dependsOn -= integrationTest
+
+task startJettyServer() {
+    // do this in a doFirst so that it'll run when the task is executed and not during configuration time (when file is read)
+    doFirst {
+        // need to run the JAR for the integration tests asynchronously
+        def jarFullPath = "${project(':').libsDir.toString()}/${jar.archiveName}"
+        def runDir = new File('.')
+        project.ext.jettyProcess = new ProcessBuilder('java', '-jar', jarFullPath).inheritIO().directory(runDir).start()
+        sleep(1_000)  // give Jetty 1 second to start up
+    }
+}
+
+task stopJettyServer() {
+    // do this in a doFirst so that it'll run when the task is executed and not during configuration time (when file is read)
+    doFirst {
+        // gradle magic, we had to set it with "project.ext.jettyProcess" but access it with "project.jettyProcess" ಠ_ಠ
+        if (project.jettyProcess) {
+            // if our JAR is running, shut it down
+            project.jettyProcess.destroy()
+        } else {
+            throw new GradleException('Unable to stop Jetty Server')
+        }
+    }
+}
+
+configure([integrationTest]) {
+    // wrap the integrationTest task to start and stop the Jetty server
+    dependsOn startJettyServer    // start the server
+    finalizedBy stopJettyServer   // stop the server, even if there are failures in the integration tests
+}
+
+// customizations for when you run "gradle idea" to build the IntelliJ project files
+idea {
+    module {
+        // have IntelliJ treat our integration tests as test code (also helps with runtime classpath)
+        testSourceDirs += file('src/integrationtest/groovy')
+    }
+}
+
+/*********************************************
+ *               Dependencies                *
+ *********************************************/
+
 // use Maven repository for dependencies
 repositories {
     mavenCentral()
 }
 
-// application dependencies
+// dependency versions
+def jettyVersion = '9.2.10.v20150310'
+def jerseyVersion = '2.17'
+def logbackVersion = '1.1.3'
+def groovyVersion = '2.4.3'
+
+// application dependencies (must go after all source sets are defined)
 dependencies {
     // jetty, jersey
-    compile 'org.eclipse.jetty:jetty-server:9.2.10.v20150310'
-    compile 'org.eclipse.jetty:jetty-servlet:9.2.10.v20150310'
-    compile 'org.glassfish.jersey.core:jersey-server:2.17'
-    compile 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.17'
-    compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.17'
-    compile 'org.glassfish.jersey.media:jersey-media-moxy:2.17'
+    compile "org.eclipse.jetty:jetty-server:$jettyVersion"
+    compile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
+    compile "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
+    compile "org.glassfish.jersey.containers:jersey-container-servlet-core:$jerseyVersion"
+    compile "org.glassfish.jersey.containers:jersey-container-jetty-http:$jerseyVersion"
+    compile "org.glassfish.jersey.media:jersey-media-moxy:$jerseyVersion"
 
     // logging
     compile 'org.slf4j:slf4j-api:1.7.12'
 
     // logging
-    runtime 'ch.qos.logback:logback-classic:1.1.3'
-    runtime 'ch.qos.logback:logback-core:1.1.3'
-    runtime 'org.codehaus.groovy:groovy:2.4.3'
+    runtime "ch.qos.logback:logback-classic:$logbackVersion"
+    runtime "ch.qos.logback:logback-core:$logbackVersion"
+    runtime "org.codehaus.groovy:groovy:$groovyVersion"
+
+    // spock
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    // spock
+    //integrationtestCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
 }

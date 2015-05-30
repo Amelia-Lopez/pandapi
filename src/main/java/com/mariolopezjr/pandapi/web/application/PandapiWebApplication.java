@@ -53,7 +53,7 @@ public class PandapiWebApplication {
 
         // set up Jetty with our configured Jersey servlet
         Server server = setupJetty(createServlet());
-        
+
         logWhenServerShutsDown();
 
         try {

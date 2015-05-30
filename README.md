@@ -20,7 +20,7 @@ java -jar build/libs/pandapi.jar
 
 ### Building
 * [JDK 7](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)
-* [Gradle 2.3+](https://gradle.org/downloads/)
+* [Gradle 2.4](https://gradle.org/downloads/)
 
 ## API
 ### Servers
