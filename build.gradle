@@ -37,7 +37,7 @@ jar {
 
 // add a custom "integrationtest" source directory (i.e. pandapi/src/integrationtest/)
 sourceSets {
-    integrationtest {
+    integrationTest {
         // tell it where the source code is for our integration tests
         groovy.srcDir 'src/integrationtest/groovy'
 
@@ -49,15 +49,15 @@ sourceSets {
 
 configurations {
     // add the necessary "main" and "test" dependencies to the integration test dependencies
-    integrationtestCompile.extendsFrom runtime, testCompile
-    integrationtestRuntime.extendsFrom testRuntime
+    integrationTestCompile.extendsFrom runtime, testCompile
+    integrationTestRuntime.extendsFrom testRuntime
 }
 
 // add an "integrationTest" Gradle task (runs the integration tests)
 task integrationTest(dependsOn: 'jar', type: Test) {
     // location of the code to run and the classpath for the integration tests
-    testClassesDir = sourceSets.integrationtest.output.classesDir
-    classpath = sourceSets.integrationtest.runtimeClasspath
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
 // do not run the integration tests during normal builds
@@ -70,7 +70,7 @@ task startJettyServer() {
         def jarFullPath = "${project(':').libsDir.toString()}/${jar.archiveName}"
         def runDir = new File('.')
         project.ext.jettyProcess = new ProcessBuilder('java', '-jar', jarFullPath).inheritIO().directory(runDir).start()
-        sleep(1_000)  // give Jetty 1 second to start up
+        sleep(2_000)  // give Jetty 2 seconds to start up
     }
 }
 
@@ -97,7 +97,10 @@ configure([integrationTest]) {
 idea {
     module {
         // have IntelliJ treat our integration tests as test code (also helps with runtime classpath)
-        testSourceDirs += file('src/integrationtest/groovy')
+        testSourceDirs += file('src/integrationTest/groovy')
+
+        // tell IntelliJ about the dependencies needed for the integration tests
+        scopes.TEST.plus += [configurations.integrationTestCompile, configurations.integrationTestRuntime]
     }
 }
 
@@ -135,8 +138,8 @@ dependencies {
     runtime "org.codehaus.groovy:groovy:$groovyVersion"
 
     // spock
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
 
-    // spock
-    //integrationtestCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    // REST client
+    integrationTestCompile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
 }

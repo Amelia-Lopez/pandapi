@@ -33,7 +33,7 @@ public class ServerApi {
      * @return String hard-coded string of an empty JSON list
      */
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public String getServers() {
         // for now return an empty JSON list
         return "[]";

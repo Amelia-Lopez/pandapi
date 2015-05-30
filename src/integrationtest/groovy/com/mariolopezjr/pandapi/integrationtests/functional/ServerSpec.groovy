@@ -18,6 +18,11 @@ package com.mariolopezjr.pandapi.integrationtests.functional
 
 import spock.lang.Specification
 
+import groovyx.net.http.HttpResponseException
+import groovyx.net.http.RESTClient
+
+import static groovyx.net.http.ContentType.JSON
+
 /**
  * Tests the functional requirements for the Server API.
  *
@@ -31,15 +36,29 @@ import spock.lang.Specification
  */
 class ServerSpec extends Specification {
 
-    def "testing spec"() {
+    // REST server details
+    static private final String PORT = '8080'   // todo: need to make this configurable
+    static private final String SERVER_BASE_URL = "http://localhost:${PORT}"
+
+    // default REST headers that all calls should use
+    static private final Map<String, String> DEFAULT_HEADERS = [Connection: 'close']
+
+    // REST client to use when calling the Panda API server
+    private RESTClient client = new RESTClient(SERVER_BASE_URL)
+
+
+    def "retrieve list of servers"() {
         given:
-        def a = 1
-        def b = 1
+        def path = '/servers'
+        def headers = DEFAULT_HEADERS
 
         when:
-        def c = 3
+        def response = client.get(path: path, headers: headers)
 
         then:
-        a == b
+        notThrown(HttpResponseException)
+        response.status == 200
+        response.contentType == JSON.toString()
+        response.data.text.toString() == '[]'
     }
 }
