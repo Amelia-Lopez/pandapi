@@ -1,14 +1,14 @@
 Panda API
 =========
 
-Panda API is a self-contained RESTful API server built on Jetty, Jersey, and other third party libraries.
-For documentation on the available endpoints, see the [API](#API) section below.
+Panda API is a self-contained RESTful API server built on Jetty, Jersey, and a few other third party libraries.
+For documentation on the available endpoints, see the [API](#api) section below.
 
 ## Quick Start
-This will start the server and allow you to access the [documented endpoints](#API).  
+This will start the server and allow you to access the [available endpoints](#api).  
 
-```
-git clone https://github.com/Mario-Lopez/Pandapi.git  
+```console
+git clone https://github.com/Mario-Lopez/pandapi.git  
 cd pandapi  
 gradle clean build  
 java -jar build/libs/pandapi.jar  
@@ -19,6 +19,10 @@ java -jar build/libs/pandapi.jar
 #### List servers
 Url: /servers
   
+Example Request  
+```
+GET /servers
+```
 Example Response  
 ```
 []
