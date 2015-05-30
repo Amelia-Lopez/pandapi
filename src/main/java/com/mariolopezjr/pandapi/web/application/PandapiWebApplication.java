@@ -22,6 +22,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Entry point of the application containing the main method.  This class does the minimum required to start the
@@ -31,11 +33,14 @@ import org.glassfish.jersey.servlet.ServletContainer;
  */
 public class PandapiWebApplication {
 
+    // slf4j logger
+    private static final Logger LOG = LoggerFactory.getLogger(PandapiWebApplication.class);
+
     // base context path for the web server
-    private final static String CONTEXT_PATH = "/";  // todo: make this configurable
+    private static final String CONTEXT_PATH = "/";  // todo: make this configurable
 
     // port that the web server should listen on
-    private final static int PORT = 8080;  // todo: make this configurable
+    private static final int PORT = 8080;  // todo: make this configurable
 
     /**
      * Entry point for the application.  Sets up an HTTP server on the configured port.
@@ -43,10 +48,16 @@ public class PandapiWebApplication {
      * @throws Exception If Jetty fails to start or is interrupted.
      */
     public static void main(String[] args) throws Exception {
+        // we want to keep track of when the server was started
+        LOG.info("Starting Panda API server");
+
         // set up Jetty with our configured Jersey servlet
         Server server = setupJetty(createServlet());
+        
+        logWhenServerShutsDown();
 
         try {
+            // main application loop
             server.start();
             server.join();
         } finally {
@@ -84,5 +95,17 @@ public class PandapiWebApplication {
         }};
 
         return new ServletHolder(new ServletContainer(resourceConfig));
+    }
+
+    /**
+     * We want to know when the server shuts down, so add a shutdown hook to log it.
+     */
+    private static void logWhenServerShutsDown() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                LOG.info("Stopping Panda API server");
+            }
+        });
     }
 }
