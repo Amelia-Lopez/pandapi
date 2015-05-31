@@ -23,7 +23,7 @@ import java.util.UUID;
  * @author Mario Lopez Jr
  * @since 0.0.5
  */
-public class Server {
+public class Server implements Cloneable, Comparable<Server> {
 
     private UUID id;
     private String name;
@@ -79,5 +79,81 @@ public class Server {
 
     public void setState(ServerState state) {
         this.state = state;
+    }
+
+    @Override
+    public Server clone() throws CloneNotSupportedException {
+        Server clone = new Server();
+
+        clone.id = this.id;        // immutable, re-use the object
+        clone.name = this.name;    // immutable, re-use the object
+        clone.cpus = this.cpus;
+        clone.ram = this.ram;
+        clone.diskSpace = this.diskSpace;
+        clone.state = this.state;
+
+        return clone;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Server server = (Server) o;
+
+        if (cpus != server.cpus) return false;
+        if (ram != server.ram) return false;
+        if (diskSpace != server.diskSpace) return false;
+        if (!id.equals(server.id)) return false;
+        if (!name.equals(server.name)) return false;
+        return state == server.state;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + cpus;
+        result = 31 * result + ram;
+        result = 31 * result + diskSpace;
+        result = 31 * result + state.hashCode();
+        return result;
+    }
+
+    @Override
+    public int compareTo(Server o) {
+        // when comparing instances of this class, you should almost never have two instances with the same UUID
+        int uuidComparison = this.id.compareTo(o.id);
+        if (uuidComparison != 0) {
+            return uuidComparison;
+        }
+
+        // something funny is going on...  compare the rest of the fields starting with name
+        int nameComparison = this.name.compareTo(o.name);
+        if (nameComparison != 0) {
+            return nameComparison;
+        }
+
+        return (this.cpus < o.cpus ? -1 :
+                (this.cpus > o.cpus ? 1 :
+                 (this.ram < o.ram ? -1 :
+                  (this.ram > o.ram ? 1 :
+                   (this.diskSpace < o.diskSpace ? -1 :
+                    (this.diskSpace > o.diskSpace ? 1 :
+                     (this.state.compareTo(o.state))))))));
+    }
+
+    @Override
+    public String toString() {
+        return "Server{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", cpus=" + cpus +
+                ", ram=" + ram +
+                ", diskSpace=" + diskSpace +
+                ", state=" + state +
+                '}';
     }
 }

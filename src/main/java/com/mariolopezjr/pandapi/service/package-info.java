@@ -15,7 +15,8 @@
  */
 
 /**
- * Contains all of the business logic for the application.
+ * Contains all of the business logic for the application.  This includes service code and the HK2 injection bindings
+ * for them.
  * @author Mario Lopez Jr
  * @since 0.0.5
  */

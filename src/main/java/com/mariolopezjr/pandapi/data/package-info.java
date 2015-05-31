@@ -16,7 +16,8 @@
 
 /**
  * Contains all of the data models for the application.  This doesn't include any API documents nor
- * DAO/ORM table mappings.
+ * DAO/ORM table mappings.  These classes also don't contain any logic to convert between themselves and
+ * other POJOs.
  * @author Mario Lopez Jr
  * @since 0.0.5
  */

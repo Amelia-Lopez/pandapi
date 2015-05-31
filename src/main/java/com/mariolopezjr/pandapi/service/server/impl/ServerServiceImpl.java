@@ -16,10 +16,13 @@
 
 package com.mariolopezjr.pandapi.service.server.impl;
 
+import com.mariolopezjr.pandapi.dao.ServerDao;
 import com.mariolopezjr.pandapi.data.server.Server;
 import com.mariolopezjr.pandapi.service.server.ServerService;
 
-import java.util.ArrayList;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -29,11 +32,38 @@ import java.util.List;
  */
 public class ServerServiceImpl implements ServerService {
 
+    // comparator so we can sort Server instances by their id field
+    private static final Comparator<Server> SERVER_UUID_COMPARATOR = new ServerUUIDComparator();
+
+    // server DAO to give us the data
+    private final ServerDao serverDao;
+
+    /**
+     * Constructor. Except in unit tests, this should never be called directly. Instead, use injection.
+     * @param serverDao {@link ServerDao}
+     */
+    @Inject
+    public ServerServiceImpl(final ServerDao serverDao) {
+        this.serverDao = serverDao;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public List<Server> getAllServers() {
-        return new ArrayList<>();
+        return serverDao.getAllServers();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Server> getAllServersSortedById() {
+        List<Server> servers = getAllServers();
+
+        Collections.sort(servers, SERVER_UUID_COMPARATOR);
+
+        return servers;
     }
 }

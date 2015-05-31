@@ -16,8 +16,7 @@
 
 package com.mariolopezjr.pandapi.web.api
 
-import com.mariolopezjr.pandapi.data.server.Server
-import com.mariolopezjr.pandapi.data.server.ServerState
+import com.mariolopezjr.pandapi.data.server.ServerUtility
 import com.mariolopezjr.pandapi.service.server.ServerService
 import com.mariolopezjr.pandapi.web.document.server.ServerGetListResponse
 import spock.lang.Shared
@@ -37,6 +36,9 @@ class ServerApiTest extends Specification {
     @Shared
     private ServerService serverService
 
+    /**
+     * Set up the shared fields before each test.
+     */
     def setup() {
         // mocks
         serverService = Mock(ServerService)
@@ -45,12 +47,12 @@ class ServerApiTest extends Specification {
     }
 
     @Unroll
-    def "retrieve list of servers when there are #instances instance(s) in the data store"() {
-        when:
+    def "retrieve list of servers when we get back #instances instance(s) from the service"() {
+        when: "the Api is called to get the list of all of the servers"
         ServerGetListResponse response = codeUnderTest.servers
 
-        then:
-        1 * serverService.allServers >> generateServerInstances(instances)
+        then: "the service was called once, and we get the same number of instances back"
+        1 * serverService.allServers >> ServerUtility.generateServerInstances(instances)
         response
         response.servers.size() == instances
 
@@ -61,33 +63,5 @@ class ServerApiTest extends Specification {
         2         | _
         10        | _
         100       | _
-    }
-
-    /**
-     * Generates the specified number of instances of {@link Server}s with junk data.
-     * @param numOfInstances int the number of desired instances, 0 or more
-     * @return {@link List}<{@link Server}>
-     */
-    private static List<Server> generateServerInstances(final int numOfInstances) {
-        if (numOfInstances == 0) {
-            return []
-        }
-
-        // create a list of server instances; use the current number to populate most of the fields
-        (1..numOfInstances).collect { int num ->
-            Server server = new Server()
-
-            server.with {
-                id = UUID.randomUUID()
-                name = "$num"
-                cpus = num
-                ram = num
-                diskSpace = num
-                state = ServerState.RUNNING
-            }
-
-            // instance will be added to the list being returned
-            server
-        }
     }
 }

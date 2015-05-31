@@ -16,7 +16,9 @@
 
 /**
  * Contains the API documents (i.e. POJOs for JSON [de]serialization) grouped (i.e. packaged) by endpoint.
- * Changes to the output/input data model of an API will be made here and in supporting classes.
+ * Changes to the output/input data model of an API will be made here and in supporting classes.  These
+ * classes handle translating domain objects to themselves and back with 'fromDomainObject' and
+ * 'toDomainObject' methods respectively.
  * @author Mario Lopez Jr
  * @since 0.0.5
  */

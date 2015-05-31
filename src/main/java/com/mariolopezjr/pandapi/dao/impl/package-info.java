@@ -14,20 +14,9 @@
  *  limitations under the License.
  */
 
-package com.mariolopezjr.pandapi.exception;
-
 /**
- * Exception to indicate that an internal error has occurred.
+ * Implementations of the interfaces in the parent package and injection bindings for them.
  * @author Mario Lopez Jr
- * @since 0.0.5
+ * @since 0.0.6
  */
-public class InternalException extends RuntimeException {
-
-    public InternalException(String message) {
-        super(message);
-    }
-
-    public InternalException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
+package com.mariolopezjr.pandapi.dao.impl;

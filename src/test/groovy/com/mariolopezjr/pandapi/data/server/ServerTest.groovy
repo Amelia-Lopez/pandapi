@@ -14,20 +14,27 @@
  *  limitations under the License.
  */
 
-package com.mariolopezjr.pandapi.exception;
+package com.mariolopezjr.pandapi.data.server
+
+import spock.lang.Shared
+import spock.lang.Specification
 
 /**
- * Exception to indicate that an internal error has occurred.
+ * Unit tests for the {@link Server} class.
  * @author Mario Lopez Jr
- * @since 0.0.5
+ * @since 0.0.6
  */
-public class InternalException extends RuntimeException {
+class ServerTest extends Specification {
 
-    public InternalException(String message) {
-        super(message);
-    }
+    def "clone an instance"() {
+        given: "a server instance"
+        def server = ServerUtility.generateServerInstances(1).first()
 
-    public InternalException(String message, Throwable cause) {
-        super(message, cause);
+        when: "the server is cloned"
+        def clone = server.clone()
+
+        then: "the clone and the server have the same values but are different instances"
+        clone == server
+        !clone.is(server)
     }
 }

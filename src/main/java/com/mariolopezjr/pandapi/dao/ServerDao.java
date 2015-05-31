@@ -14,31 +14,22 @@
  *  limitations under the License.
  */
 
-package com.mariolopezjr.pandapi.service.server;
+package com.mariolopezjr.pandapi.dao;
 
 import com.mariolopezjr.pandapi.data.server.Server;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
- * The Server service allows code to create, retrieve, and delete server resources.  All of the business logic
- * for these actions are here.
+ * The Server DAO allows code to access the backing data store for server resources.
  * @author Mario Lopez Jr
- * @since 0.0.5
+ * @since 0.0.6
  */
-public interface ServerService {
+public interface ServerDao {
 
     /**
-     * Retrieve a list of all of the server resources (including destroyed) currently in the system.
+     * Retrieve a list of all of the server resources (including destroyed) currently in the backing data store.
      * @return {@link List}<{@link Server}>
      */
     List<Server> getAllServers();
-
-    /**
-     * Retrieve a list of all of the server resources (including destroyed) currently in the system.  The list of
-     * servers will be sorted by their {@link Server#id} field according to {@link java.util.UUID#compareTo(UUID)}.
-     * @return  {@link List}<{@link Server}>
-     */
-    List<Server> getAllServersSortedById();
 }

@@ -16,7 +16,7 @@
 
 /**
  * Contains all of the Data Access Objects including the code that knows how to interface with the
- * data store (e.g. database) and any POJOs needed to do that (e.g. JPA entity bean).
+ * data store (e.g. database, in-memory data, API call) and any POJOs needed to do that (e.g. JPA entity bean).
  * @author Mario Lopez Jr
  * @since 0.0.5
  */

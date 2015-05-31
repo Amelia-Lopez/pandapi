@@ -16,24 +16,26 @@
 
 package com.mariolopezjr.pandapi.service.server.impl;
 
-import com.mariolopezjr.pandapi.service.server.ServerService;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import com.mariolopezjr.pandapi.data.server.Server;
 
-import javax.inject.Singleton;
+import java.util.Comparator;
 
 /**
- * Specify our injection bindings for the Server service.  This class will be loaded by the
- * {@link com.mariolopezjr.pandapi.web.application.PandapiWebApplication}.
+ * Comparator for {@link Server} objects that compares them by their {@link Server#id} only.
  * @author Mario Lopez Jr
- * @since 0.0.5
+ * @since 0.0.6
  */
-public class ServerServiceBinder extends AbstractBinder {
+public class ServerUUIDComparator implements Comparator<Server> {
 
     /**
-     * Configure injection bindings definitions
+     * Compares the two {@link Server}s by their {@link java.util.UUID}.  Null instances are not permitted.
+     * @param o1 {@link Server}
+     * @param o2 {@link Server}
+     * @return int
+     * @throws NullPointerException if either of the {@link Server} instances are null.
      */
     @Override
-    protected void configure() {
-        bind(ServerServiceImpl.class).to(ServerService.class).in(Singleton.class);
+    public int compare(Server o1, Server o2) {
+        return o1.getId().compareTo(o2.getId());
     }
 }

@@ -14,20 +14,26 @@
  *  limitations under the License.
  */
 
-package com.mariolopezjr.pandapi.exception;
+package com.mariolopezjr.pandapi.dao.impl;
+
+import com.mariolopezjr.pandapi.dao.ServerDao;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import javax.inject.Singleton;
 
 /**
- * Exception to indicate that an internal error has occurred.
+ * Injection bindings for all of the DAO classes.  This class will be loaded by the
+ * {@link com.mariolopezjr.pandapi.web.application.PandapiWebApplication}.
  * @author Mario Lopez Jr
- * @since 0.0.5
+ * @since 0.0.6
  */
-public class InternalException extends RuntimeException {
+public class DaoBinder extends AbstractBinder {
 
-    public InternalException(String message) {
-        super(message);
-    }
-
-    public InternalException(String message, Throwable cause) {
-        super(message, cause);
+    /**
+     * Configure injection binding definitions
+     */
+    @Override
+    protected void configure() {
+        bind(ServerInMemoryDao.class).to(ServerDao.class).in(Singleton.class);
     }
 }
