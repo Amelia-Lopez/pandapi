@@ -31,7 +31,7 @@ import javax.ws.rs.core.MediaType;
  * @since 0.0.1
  */
 @Service
-@Path("/servers")
+@Path("/v1/servers")
 public class ServerApi {
 
     private final ServerService serverService;
