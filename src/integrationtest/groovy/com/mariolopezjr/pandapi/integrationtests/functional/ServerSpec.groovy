@@ -49,7 +49,7 @@ class ServerSpec extends Specification {
     def RESTClient client
 
     /**
-     * Call once before running any tests
+     * This method is called once before running any tests.
      */
     def setupSpec() {
         client = new RESTClient(SERVER_BASE_URL)
