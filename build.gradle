@@ -70,7 +70,7 @@ task startJettyServer() {
         def jarFullPath = "${project(':').libsDir.toString()}/${jar.archiveName}"
         def runDir = new File('.')
         project.ext.jettyProcess = new ProcessBuilder('java', '-jar', jarFullPath).inheritIO().directory(runDir).start()
-        sleep(2_000)  // give Jetty 2 seconds to start up
+        sleep(3_000)  // give Jetty 3 seconds to start up
     }
 }
 

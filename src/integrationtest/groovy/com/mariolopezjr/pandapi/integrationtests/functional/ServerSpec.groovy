@@ -16,6 +16,7 @@
 
 package com.mariolopezjr.pandapi.integrationtests.functional
 
+import spock.lang.Shared
 import spock.lang.Specification
 
 import groovyx.net.http.HttpResponseException
@@ -44,10 +45,17 @@ class ServerSpec extends Specification {
     static private final Map<String, String> DEFAULT_HEADERS = [Connection: 'close']
 
     // REST client to use when calling the Panda API server
-    private RESTClient client = new RESTClient(SERVER_BASE_URL)
+    @Shared
+    def RESTClient client
 
+    /**
+     * Call once before running any tests
+     */
+    def setupSpec() {
+        client = new RESTClient(SERVER_BASE_URL)
+    }
 
-    def "retrieve list of servers"() {
+    def "retrieve empty list of servers"() {
         given:
         def path = '/servers'
         def headers = DEFAULT_HEADERS
@@ -59,6 +67,6 @@ class ServerSpec extends Specification {
         notThrown(HttpResponseException)
         response.status == 200
         response.contentType == JSON.toString()
-        response.data.text.toString() == '[]'
+        response.data == [servers: []]
     }
 }

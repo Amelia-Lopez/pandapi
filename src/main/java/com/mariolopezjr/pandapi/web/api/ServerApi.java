@@ -16,6 +16,11 @@
 
 package com.mariolopezjr.pandapi.web.api;
 
+import com.mariolopezjr.pandapi.service.server.ServerService;
+import com.mariolopezjr.pandapi.web.document.server.ServerGetListResponse;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -25,17 +30,28 @@ import javax.ws.rs.core.MediaType;
  * @author Mario Lopez Jr
  * @since 0.0.1
  */
+@Service
 @Path("/servers")
 public class ServerApi {
 
+    private final ServerService serverService;
+
+    /**
+     * Constructor. Except in unit tests, this should never be called directly. Instead, use injection.
+     * @param serverService {@link ServerService}
+     */
+    @Inject
+    public ServerApi(final ServerService serverService) {
+        this.serverService = serverService;
+    }
+
     /**
      * Returns the list of server resources in the system.
-     * @return String hard-coded string of an empty JSON list
+     * @return {@link ServerGetListResponse}
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getServers() {
-        // for now return an empty JSON list
-        return "[]";
+    public ServerGetListResponse getServers() {
+        return ServerGetListResponse.fromDomainObject(serverService.getAllServers());
     }
 }

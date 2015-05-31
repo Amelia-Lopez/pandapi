@@ -16,10 +16,14 @@
 
 package com.mariolopezjr.pandapi.web.application;
 
+import com.mariolopezjr.pandapi.service.server.ServerService;
+import com.mariolopezjr.pandapi.service.server.impl.ServerServiceBinder;
+import com.mariolopezjr.pandapi.service.server.impl.ServerServiceImpl;
 import com.mariolopezjr.pandapi.web.api.ServerApi;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
@@ -90,6 +94,9 @@ public class PandapiWebApplication {
     private static ServletHolder createServlet() {
         // use a ResourceConfig to specify which Java packages Jersey should scan
         ResourceConfig resourceConfig = new ResourceConfig() {{
+            // register our injection bindings
+            register(new ServerServiceBinder());
+
             // specify the API package by using a concrete class to give us static type checking
             packages(ServerApi.class.getPackage().getName());
         }};
