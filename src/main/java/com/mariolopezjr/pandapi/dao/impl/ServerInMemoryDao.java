@@ -34,8 +34,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ServerInMemoryDao implements ServerDao {
 
-    // base path for all config values
-    private static final String CONFIG_BASE_PATH = "dataStore/inMemoryMap";
+    // base path for all of the config values for this class
+    private static final String CONFIG_BASE_PATH = "dataStore/inMemoryMap/";
 
     // where we store our data
     private final ConcurrentMap<UUID, Server> dataStore;
@@ -79,7 +79,7 @@ public class ServerInMemoryDao implements ServerDao {
      * @return {@link ConcurrentMap}<{@link UUID}, {@link Server}>
      */
     private ConcurrentMap<UUID, Server> createDataStore() {
-        // initial size of the ConcurrentHashMap to prevent frequent re-sizing below 768 entries
+        // initial size of the ConcurrentHashMap to prevent frequent re-sizing below a certain threshold
         int initialCapacity = config.getInt(CONFIG_BASE_PATH + "initialCapacity", 1_024);
 
         // the load factor, affects how often re-sizing occurs

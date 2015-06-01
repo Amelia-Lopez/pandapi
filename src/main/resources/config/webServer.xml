@@ -17,7 +17,25 @@
 
 <config>
     <webServer>
+        <!-- base path for the URLs -->
         <contextPath>/</contextPath>
+
+        <!-- HTTP port to listen on -->
         <port>8080</port>
+
+        <!-- how long to wait for a client to send more data in milliseconds,
+             helps protect against malicious clients being slow on purpose to use up server threads -->
+        <clientTimeout>5000</clientTimeout>
+
+        <threadPool>
+            <!-- minimum number of threads to keep around (including at start up) -->
+            <minThreads>8</minThreads>
+
+            <!-- maximum number of threads the server can start to handle requests -->
+            <maxThreads>100</maxThreads>
+
+            <!-- how long to wait before stopping an idle thread in milliseconds -->
+            <idleTimeout>60000</idleTimeout>
+        </threadPool>
     </webServer>
 </config>

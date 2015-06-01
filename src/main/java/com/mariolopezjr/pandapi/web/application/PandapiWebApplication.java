@@ -25,8 +25,11 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -37,7 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Entry point of the application containing the main method.
+ * Entry point of the application containing the main method.  Currently sets up Jersey and Jetty, but this should be
+ * moved into another class.
  * @author Mario Lopez Jr
  * @since 0.0.1
  */
@@ -49,9 +53,8 @@ public class PandapiWebApplication {
     // location of the main config file (that refers to our other config files)
     private static final String CONFIG_FILE = "config/config.xml";
 
-    // locations of fields in the config
-    private static final String CONFIG_PORT = "webServer/port";
-    private static final String CONFIG_CONTEXT_PATH = "webServer/contextPath";
+    // base path for all of the config values for this class
+    private static final String CONFIG_BASE_PATH = "webServer/";
 
     /**
      * Entry point for the application.  Sets up an HTTP server on the configured port.
@@ -75,11 +78,6 @@ public class PandapiWebApplication {
         // we want to keep track of when the server was started
         LOG.info("Starting Panda API server");
 
-        // configured values
-        int port = config.getInt(CONFIG_PORT);
-        String contextPath = config.getString(CONFIG_CONTEXT_PATH);
-        LOG.debug("Listening on port {} with context path: {}", port, contextPath);
-
         // dependency injection binders
         List<AbstractBinder> binders = Arrays.asList(
                 new ServerServiceBinder(),
@@ -90,9 +88,9 @@ public class PandapiWebApplication {
         ServletHolder servletHolder = createServlet(binders);
 
         // set up Jetty
-        Server server = setupJetty(servletHolder, port, contextPath);
+        Server server = setupJetty(servletHolder, config);
 
-        // add a shutdown hook to log when the server is shut down
+        // add a shutdown hook to log when the server goes down
         logWhenServerShutsDown();
 
         try {
@@ -107,19 +105,45 @@ public class PandapiWebApplication {
     /**
      * Creates and sets up a Jetty server with the specified {@link ServletHolder} servlet.
      * @param servletHolder {@link ServletHolder} The servlet to add to the Jetty servlet context.
-     * @param port int the port that Jetty should listen on to serve HTTP requests
-     * @param contextPath String the base context path of the server, e.g. /
+     * @param config {@link Configuration}
      * @return {@link Server} The Jetty server
      */
-    private static Server setupJetty(final ServletHolder servletHolder, int port, String contextPath) {
+    private static Server setupJetty(final ServletHolder servletHolder, final Configuration config) {
+        // configuration values
+        String contextPath = config.getString(CONFIG_BASE_PATH + "contextPath");
+        int port = config.getInt(CONFIG_BASE_PATH + "port");
+        int clientTimeout = config.getInt(CONFIG_BASE_PATH + "clientTimeout");
+        int maxThreads = config.getInt(CONFIG_BASE_PATH + "threadPool/maxThreads");
+        int minThreads = config.getInt(CONFIG_BASE_PATH + "threadPool/minThreads");
+        int idleTimeout = config.getInt(CONFIG_BASE_PATH + "threadPool/idleTimeout");
+
+        LOG.debug("Listening on port {} with context path: {}", port, contextPath);
+        LOG.debug("Using configuration values: clientTimeout={}, maxThreads={}, minThreads={}, idleTimeout={}",
+                clientTimeout, maxThreads, minThreads, idleTimeout);
+
+        // thread pool
+        QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
+
+        // create the Jetty server
+        Server jettyServer = new Server(threadPool);
+
+        // set port and client timeout
+        ServerConnector connector = new ServerConnector(jettyServer);
+        connector.setPort(port);
+        connector.setIdleTimeout(clientTimeout);
+        jettyServer.addConnector(connector);
+
         // set up the Jetty context and add the specified servlet
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath(contextPath);
         context.addServlet(servletHolder, "/*");
-
-        // create the Jetty server and add the context
-        Server jettyServer = new Server(port);
         jettyServer.setHandler(context);
+
+        // scheduler
+        jettyServer.addBean(new ScheduledExecutorScheduler());
+
+        // gracefully shut down Jetty when the JVM goes down
+        jettyServer.setStopAtShutdown(true);
 
         return jettyServer;
     }
