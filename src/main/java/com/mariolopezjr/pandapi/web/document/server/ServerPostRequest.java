@@ -16,6 +16,8 @@
 
 package com.mariolopezjr.pandapi.web.document.server;
 
+import com.mariolopezjr.pandapi.data.server.Server;
+
 /**
  * The data model for the POST request for a resource.  Not all of the {@link ServerDoc} fields are
  * necessarily allowed to be set by the client.  This will be validated by the service.
@@ -26,6 +28,14 @@ public class ServerPostRequest {
 
     private ServerDoc server;
 
+    /**
+     * Creates a new instance of the domain object with the relevant values from this document.
+     * @return {@link Server}
+     */
+    public Server toDomainObject() {
+        // this request is really just a wrapper, so delegate to the ServerDoc class
+        return server.toDomainObject();
+    }
 
     public ServerDoc getServer() {
         return server;

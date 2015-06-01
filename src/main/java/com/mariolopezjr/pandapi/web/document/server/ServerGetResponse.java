@@ -16,6 +16,8 @@
 
 package com.mariolopezjr.pandapi.web.document.server;
 
+import com.mariolopezjr.pandapi.data.server.Server;
+
 /**
  * The data model for the GET response for a single resource.
  * @author Mario Lopez Jr
@@ -25,6 +27,16 @@ public class ServerGetResponse {
 
     private ServerDoc server;
 
+    /**
+     * Creates a new instance of this document with the relevant values from the provided domain object.
+     * @param domainObject {@link Server}
+     * @return {@link ServerGetResponse}
+     */
+    public static ServerGetResponse fromDomainObject(final Server domainObject) {
+        ServerGetResponse doc = new ServerGetResponse();
+        doc.setServer(ServerDoc.fromDomainObject(domainObject));
+        return doc;
+    }
 
     public ServerDoc getServer() {
         return server;

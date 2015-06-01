@@ -14,10 +14,20 @@
  *  limitations under the License.
  */
 
-/**
- * Exceptions used in the source code that map to relevant HTTP status codes in the API.  These exceptions exist
- * to avoid service and DAO classes from having to depend on REST exceptions.
- * @author Mario Lopez Jr
- * @since 0.0.5
- */
 package com.mariolopezjr.pandapi.exception;
+
+/**
+ * Exception to indicate that a received request was bad (e.g. contained invalid or out of range values).
+ * @author Mario Lopez Jr
+ * @since 0.0.7
+ */
+public class BadRequestException extends RuntimeException {
+
+    public BadRequestException(String message) {
+        super(message);
+    }
+
+    public BadRequestException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

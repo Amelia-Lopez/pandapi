@@ -47,4 +47,17 @@ public enum ServerStateDoc {
             default: throw new NonCorrespondingValueException("Unknown server state: " + domainObject);
         }
     }
+
+    /**
+     * Returns an enum of type {@link ServerState} for the corresponding value of this enum instance.
+     * @return {@link ServerState}
+     */
+    public ServerState toDomainObject() {
+        switch(this) {
+            case Building: return ServerState.BUILDING;
+            case Running: return ServerState.RUNNING;
+            case Destroyed: return ServerState.DESTROYED;
+            default: throw new NonCorrespondingValueException("Unknown server state: " + this);
+        }
+    }
 }

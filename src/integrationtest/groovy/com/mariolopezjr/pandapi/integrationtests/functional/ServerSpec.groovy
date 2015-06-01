@@ -54,6 +54,9 @@ class ServerSpec extends Specification {
     // servers take 35 seconds to be built
     static private final int SERVER_BUILD_TIME = 35_000
 
+    // a UUID that should not exist in the system (no guarantee of that, though)
+    static private final String NON_EXISTENT_ID = "4e0b19f0-ef4a-4de6-b3a7-4dd74d6a39bd"
+
     // REST client to use when calling the Panda API server
     @Shared
     def RESTClient client
@@ -90,7 +93,7 @@ class ServerSpec extends Specification {
         given: "a valid request"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest()
+        def request = createNewServerRequest(name: 'abc', cpus: 4, ram: 8, diskSpace: 40)
 
         when: "we POST to the endpoint"
         def response = client.post(path: path, requestContentType: JSON, headers: headers, body: request)
@@ -103,7 +106,7 @@ class ServerSpec extends Specification {
         response.contentType == JSON.toString()
 
         // server should give us the URL for the newly created resource
-        response.headers.Location == "$BASE_PATH/${response.data.server.id}"
+        response.headers.Location == "${SERVER_BASE_URL}$BASE_PATH/${response.data.server.id}"
 
         // values in the response
         isValidUUID(response.data.server.id as String)
@@ -111,7 +114,7 @@ class ServerSpec extends Specification {
         response.data.server.cpus == request.server.cpus
         response.data.server.ram == request.server.ram
         response.data.server.diskSpace == request.server.diskSpace
-        response.data.server.status == 'Building'
+        response.data.server.state == 'Building'
     }
 
     @Timeout(1)
@@ -119,7 +122,7 @@ class ServerSpec extends Specification {
         given: "a server exists"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'List Server Test')
+        def request = createNewServerRequest(name: 'List Server Test', cpus: 4, ram: 8, diskSpace: 40)
         client.post(path: path, requestContentType: JSON, headers: headers, body: request)
 
         when: "we retrieve the list of servers"
@@ -137,7 +140,7 @@ class ServerSpec extends Specification {
         given: "a server exists"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'Get Individual Server Test')
+        def request = createNewServerRequest(name: 'Get Individual Server Test', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         when: "we retrieve the server"
@@ -155,12 +158,13 @@ class ServerSpec extends Specification {
         response.data.server.id == id
     }
 
+    @Ignore // ain't nobody got time for that
     @Timeout(45)
     def "new server goes into Running state after about 35 seconds"() {
         given: "a valid request"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest()
+        def request = createNewServerRequest(name: 'Valid', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         and: "the server resource has had time to be built"
@@ -177,12 +181,12 @@ class ServerSpec extends Specification {
     }
 
     @Ignore // ain't nobody got time for that
-    @Timeout(1)
+    @Timeout(45)
     def "delete a server"() {
         given: "a server exists"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'Get Individual Server Test')
+        def request = createNewServerRequest(name: 'Get Individual Server Test', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         and: "the server resource has had time to be built"
@@ -197,12 +201,12 @@ class ServerSpec extends Specification {
     }
 
     @Ignore // ain't nobody got time for that
-    @Timeout(1)
+    @Timeout(45)
     def "deleted server is marked destroyed"() {
         given: "a server exists"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'Get Individual Server Test')
+        def request = createNewServerRequest(name: 'Get Individual Server Test', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         and: "the server resource has had time to be built"
@@ -217,16 +221,16 @@ class ServerSpec extends Specification {
         then: "the server has the status 'Destroyed'"
         notThrown(HttpResponseException)
         response.status == HttpStatus.OK_200
-        response.data.server.status == 'Destroyed'
+        response.data.server.state == 'Destroyed'
     }
 
     @Ignore // ain't nobody got time for that
-    @Timeout(1)
+    @Timeout(110)
     def "deleted server is purged after one minute"() {
         given: "a server exists"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'Get Individual Server Test')
+        def request = createNewServerRequest(name: 'Get Individual Server Test', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         and: "the server resource has had time to be built"
@@ -271,18 +275,18 @@ class ServerSpec extends Specification {
         'abc' | null | 1    | 1         || 'cpus'
         'abc' | 1    | 0    | 1         || 'ram'
         'abc' | 1    | null | 1         || 'ram'
-        'abc' | 1    | 1    | 0         || 'diskSpace'
-        'abc' | 1    | 1    | null      || 'diskSpace'
+        'abc' | 1    | 1    | 0         || 'diskspace'
+        'abc' | 1    | 1    | null      || 'diskspace'
     }
 
     @Unroll
     @Timeout(1)
-    def "create server request with invalid field #field with value #value fails"() {
+    def "create server request with field '#field' having invalid value '#value' fails"() {
         given: "an invalid request"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest()
-        request[field] = 'a'
+        def request = createNewServerRequest(name: 'invalid', cpus: 4, ram: 8, diskSpace: 40)
+        request[field] = value
 
         when: "we POST to the endpoint"
         client.post(path: path, requestContentType: JSON, headers: headers, body: request)
@@ -290,25 +294,22 @@ class ServerSpec extends Specification {
         then: "the request is unsuccessful"
         def e = thrown(HttpResponseException)
         e.response.statusLine.statusCode == HttpStatus.BAD_REQUEST_400
-        e.response.contentType == JSON.toString()
-        e.response.data.error.toLowerCase().contains(field)
+        e.response.data.text.toLowerCase().contains(field)
 
         where:
         field   | value
         'id'    | 'abc'
-        'id'    | null
         'state' | 'Running'
-        'state' | null
         'pie'   | 'pecan'
     }
 
     @Ignore // ain't nobody got time for that
-    @Timeout(1)
+    @Timeout(45)
     def "unsuccessfully try to delete an already destroyed server"() {
         given: "a server exists"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'Get Individual Server Test')
+        def request = createNewServerRequest(name: 'Get Individual Server Test', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         and: "the server resource has had time to be built"
@@ -329,7 +330,7 @@ class ServerSpec extends Specification {
 
     def "unsuccessfully try to delete a non-existent server"() {
         given: "an ID for a server that does not exist"
-        def path = "$BASE_PATH/fake_id_bro"
+        def path = "$BASE_PATH/$NON_EXISTENT_ID"
         def headers = DEFAULT_HEADERS
 
         when: "we try to delete the non-existent server"
@@ -343,7 +344,7 @@ class ServerSpec extends Specification {
 
     def "unsuccessfully try to retrieve a non-existent server"() {
         given: "an ID for a server that does not exist"
-        def path = "$BASE_PATH/fake_id_bro"
+        def path = "$BASE_PATH/$NON_EXISTENT_ID"
         def headers = DEFAULT_HEADERS
 
         when: "we try to retrieve the non-existent server"
@@ -360,7 +361,7 @@ class ServerSpec extends Specification {
         given: "a server is still building"
         def path = BASE_PATH
         def headers = DEFAULT_HEADERS
-        def request = createNewServerRequest(name: 'Get Individual Server Test')
+        def request = createNewServerRequest(name: 'Get Individual Server Test', cpus: 4, ram: 8, diskSpace: 40)
         def id = client.post(path: path, requestContentType: JSON, headers: headers, body: request).data.server.id
 
         // don't sleep to give the server time to build
@@ -377,17 +378,16 @@ class ServerSpec extends Specification {
 
 
     /**
-     * Create a new server request for the POST method.  All of the values have valid defaults, so nothing is required
-     * to be passed in.
-     * @param options Map valid values are: name, cpus, ram, diskSpace
+     * Create a new server request for the POST method.
+     * @param options Map required values are: name, cpus, ram, diskSpace
      * @return Object usable by the REST client as a request body.
      */
     def createNewServerRequest(Map options = [:]) {
         [server: [
-                name: options['name'] as String ?: 'Default Name',
-                cpus: options['cpus'] as Integer ?: 4,
-                ram: options['ram'] as Integer ?: 8,
-                diskSpace: options['diskSpace'] as Integer ?: 40]]
+                name: options['name'] as String,
+                cpus: options['cpus'] as Integer,
+                ram: options['ram'] as Integer,
+                diskSpace: options['diskSpace'] as Integer]]
     }
 
     /**

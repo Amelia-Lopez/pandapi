@@ -19,6 +19,7 @@ package com.mariolopezjr.pandapi.web.application;
 import com.mariolopezjr.pandapi.dao.impl.DaoBinder;
 import com.mariolopezjr.pandapi.service.server.impl.ServerServiceBinder;
 import com.mariolopezjr.pandapi.web.api.ServerApi;
+import com.mariolopezjr.pandapi.web.providers.InternalExceptionMapper;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -96,8 +97,11 @@ public class PandapiWebApplication {
             register(new ServerServiceBinder());
             register(new DaoBinder());
 
-            // specify the API package by using a concrete class to give us static type checking
+            // specify the API package by using a concrete class to give us some static type checking
             packages(ServerApi.class.getPackage().getName());
+
+            // specify the exception mappers package by using a concrete class to give us some static type checking
+            packages(InternalExceptionMapper.class.getPackage().getName());
         }};
 
         return new ServletHolder(new ServletContainer(resourceConfig));

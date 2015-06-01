@@ -18,7 +18,6 @@ package com.mariolopezjr.pandapi.dao.impl;
 
 import com.mariolopezjr.pandapi.dao.ServerDao;
 import com.mariolopezjr.pandapi.data.server.Server;
-import com.mariolopezjr.pandapi.exception.InternalException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,19 +76,76 @@ public class ServerInMemoryDao implements ServerDao {
      */
     @Override
     public List<Server> getAllServers() {
-        try {
-            Collection<Server> servers = dataStore.values();
-            List<Server> clonedServers = new ArrayList<>(servers.size());
+        Collection<Server> servers = dataStore.values();
+        List<Server> clonedServers = new ArrayList<>(servers.size());
 
-            // clone each instance to prevent client code from directly writing to the in-memory data store
-            for (Server server : servers) {
-                clonedServers.add(server.clone());
-            }
-
-            return Collections.unmodifiableList(clonedServers);
-        } catch (CloneNotSupportedException e) {
-            // should never happen
-            throw new InternalException("Did someone remove the Server.clone() method!?!", e);
+        // clone each instance to prevent client code from directly writing to the in-memory data store
+        for (Server server : servers) {
+            clonedServers.add(server.clone());
         }
+
+        return Collections.unmodifiableList(clonedServers);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Server getServerById(UUID serverId) {
+        return dataStore.get(serverId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Server createServer(Server server) {
+        boolean serverCreated = false;
+
+        while (!serverCreated) {
+            UUID id = UUID.randomUUID();
+
+            // putIfAbsent will return null if the server was successfully persisted or it'll return the existing
+            // server if the UUID was already in use.  In theory it should never happen.  In theory...
+            Server existingServer = dataStore.putIfAbsent(id, server);
+
+            if (null == existingServer) {
+                // server resource was successfully persisted, let's set its new id
+                serverCreated = true;
+                server.setId(id);
+            }
+        }
+
+        return server;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateServer(Server server) {
+        // the resource will only be updated if the resource already existed
+        Server previousValue = dataStore.replace(server.getId(), server);
+
+        // return false if there was no previous value (which means nothing was updated)
+        return previousValue != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteServer(UUID serverId) {
+        // get the existing value to remove it from the data store safely
+        Server server = dataStore.get(serverId);
+
+        if (null == server) {
+            // nothing to delete
+            return false;
+        }
+
+        // delete the server
+        return dataStore.remove(serverId, server);
+
     }
 }

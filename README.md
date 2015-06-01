@@ -62,11 +62,11 @@ If you ran the above command, simply press Control-C to gracefully stop the serv
 ## API
 ### Servers
 #### List servers
-Url: /servers
+Url: /v1/servers
   
 Example Request  
 ```
-GET /servers
+GET /v1/servers
 ```
 Example Response  
 ```

@@ -41,4 +41,25 @@ public interface ServerService {
      * @return  {@link List}<{@link Server}>
      */
     List<Server> getAllServersSortedById();
+
+    /**
+     * Retrieve the server resource with the specified ID
+     * @param serverId {@link String} UUID string
+     * @return {@link Server}
+     */
+    Server getServerById(String serverId);
+
+    /**
+     * Create a new server with the specified values.
+     * @param server {@link Server} the requested values
+     * @return {@link Server} the persisted server with a unique ID and a state
+     */
+    Server createServer(Server server);
+
+    /**
+     * Destroys the server with the specified ID.
+     * @param serverId {@link String} UUID string
+     * @throws com.mariolopezjr.pandapi.exception.ResourceNotFoundException if server does not exist
+     */
+    void deleteServer(String serverId);
 }

@@ -53,6 +53,23 @@ public class ServerDoc {
         return doc;
     }
 
+    /**
+     * Creates a new instance of the domain object with the relevant values from this document.
+     * @return {@link Server}
+     */
+    public Server toDomainObject() {
+        Server domainObject = new Server();
+
+        domainObject.setId(this.getId());
+        domainObject.setName(this.getName());
+        domainObject.setCpus(this.getCpus());
+        domainObject.setRam(this.getRam());
+        domainObject.setDiskSpace(this.getDiskSpace());
+        domainObject.setState(this.getState() == null ? null : this.getState().toDomainObject());
+
+        return domainObject;
+    }
+
     public UUID getId() {
         return id;
     }

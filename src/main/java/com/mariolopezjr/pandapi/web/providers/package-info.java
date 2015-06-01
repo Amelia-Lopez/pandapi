@@ -15,9 +15,8 @@
  */
 
 /**
- * Exceptions used in the source code that map to relevant HTTP status codes in the API.  These exceptions exist
- * to avoid service and DAO classes from having to depend on REST exceptions.
+ * Jersey providers (e.g. exception mappers).
  * @author Mario Lopez Jr
- * @since 0.0.5
+ * @since 0.0.7
  */
-package com.mariolopezjr.pandapi.exception;
+package com.mariolopezjr.pandapi.web.providers;

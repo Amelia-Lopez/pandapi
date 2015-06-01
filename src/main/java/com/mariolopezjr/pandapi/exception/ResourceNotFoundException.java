@@ -14,10 +14,20 @@
  *  limitations under the License.
  */
 
-/**
- * Exceptions used in the source code that map to relevant HTTP status codes in the API.  These exceptions exist
- * to avoid service and DAO classes from having to depend on REST exceptions.
- * @author Mario Lopez Jr
- * @since 0.0.5
- */
 package com.mariolopezjr.pandapi.exception;
+
+/**
+ * Exception to indicate that the requested resource was not found.
+ * @author Mario Lopez Jr
+ * @since 0.0.7
+ */
+public class ResourceNotFoundException extends RuntimeException {
+
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+
+    public ResourceNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
