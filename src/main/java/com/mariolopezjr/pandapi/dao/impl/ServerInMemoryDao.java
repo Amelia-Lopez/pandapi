@@ -19,7 +19,9 @@ package com.mariolopezjr.pandapi.dao.impl;
 import com.mariolopezjr.pandapi.dao.ServerDao;
 import com.mariolopezjr.pandapi.data.server.Server;
 import com.mariolopezjr.pandapi.exception.InternalException;
+import org.apache.commons.configuration.Configuration;
 
+import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -32,12 +34,24 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ServerInMemoryDao implements ServerDao {
 
+    // base path for all config values
+    private static final String CONFIG_BASE_PATH = "dataStore/inMemoryMap";
+
+    // where we store our data
     private final ConcurrentMap<UUID, Server> dataStore;
+
+    // where we get our configuration
+    private final Configuration config;
 
     /**
      * Constructor
      */
-    public ServerInMemoryDao() {
+    @Inject
+    public ServerInMemoryDao(final Configuration config) {
+        // must be first so other initialization has access to config
+        this.config = config;
+
+        // initialize the data store
         dataStore = createDataStore();
     }
 
@@ -45,7 +59,13 @@ public class ServerInMemoryDao implements ServerDao {
      * Constructor for the unit test to call.  Purposely has package level scope.
      * @param dataStore {@link ConcurrentMap}<{@link UUID}, {@link Server}>
      */
-    ServerInMemoryDao(final ConcurrentMap<UUID, Server> dataStore) {
+    ServerInMemoryDao(
+            final ConcurrentMap<UUID, Server> dataStore,
+            final Configuration config) {
+        // must be first so other initialization has access to config
+        this.config = config;
+
+        // use the data store provided
         this.dataStore = dataStore;
     }
 
@@ -56,18 +76,17 @@ public class ServerInMemoryDao implements ServerDao {
      * With an initial capacity of 1,024 and a load factor of 0.75f, we won't see any map re-sizing until we have
      * about 768 elements.  See {@link ConcurrentHashMap#ConcurrentHashMap(int, float, int)} for additional details.<br/>
      *
-     * todo: These performance impacting factors should be configurable.
      * @return {@link ConcurrentMap}<{@link UUID}, {@link Server}>
      */
     private ConcurrentMap<UUID, Server> createDataStore() {
         // initial size of the ConcurrentHashMap to prevent frequent re-sizing below 768 entries
-        int initialCapacity = 1_024;
+        int initialCapacity = config.getInt(CONFIG_BASE_PATH + "initialCapacity", 1_024);
 
         // the load factor, affects how often re-sizing occurs
-        float loadFactory = 0.75f;
+        float loadFactory = config.getFloat(CONFIG_BASE_PATH + "loadFactor", 0.75f);
 
         // expected number of threads that will be updating the map at the same time
-        int concurrencyLevel = 100;
+        int concurrencyLevel = config.getInt(CONFIG_BASE_PATH + "concurrencyLevel", 100);
 
         return new ConcurrentHashMap<>(initialCapacity, loadFactory, concurrencyLevel);
     }

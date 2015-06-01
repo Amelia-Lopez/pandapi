@@ -19,6 +19,7 @@ package com.mariolopezjr.pandapi.dao.impl
 import com.mariolopezjr.pandapi.data.server.Server
 import com.mariolopezjr.pandapi.data.server.ServerUtility
 import com.mariolopezjr.pandapi.exception.InternalException
+import org.apache.commons.configuration.Configuration
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -40,11 +41,19 @@ class ServerInMemoryDaoTest extends Specification {
     @Shared
     private ConcurrentMap<UUID, Server> dataStore
 
+    @Shared
+    private Configuration config
+
     def setup() {
         // set initial size of map to 200 to avoid resizing during these tests
         dataStore = new ConcurrentHashMap<>(200)
 
-        codeUnderTest = new ServerInMemoryDao(dataStore)
+        config = Mock(Configuration) {
+            getInt(_ as String, _ as Integer) >>> [1024, 100]
+            getFloat(_ as String, _ as Float) >> 0.75f
+        }
+
+        codeUnderTest = new ServerInMemoryDao(dataStore, config)
     }
 
     @Unroll

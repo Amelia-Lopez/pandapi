@@ -16,6 +16,7 @@
 
 package com.mariolopezjr.pandapi.service.server.impl;
 
+import com.google.common.base.Stopwatch;
 import com.mariolopezjr.pandapi.dao.ServerDao;
 import com.mariolopezjr.pandapi.data.server.Server;
 import com.mariolopezjr.pandapi.data.server.ServerState;
@@ -61,7 +62,13 @@ public class ServerServiceImpl implements ServerService {
      */
     @Override
     public List<Server> getAllServers() {
-        return serverDao.getAllServers();
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        List<Server> servers = serverDao.getAllServers();
+
+        LOG.trace("getAllServers() took: {}", stopwatch);
+
+        return servers;
     }
 
     /**
@@ -69,10 +76,14 @@ public class ServerServiceImpl implements ServerService {
      */
     @Override
     public List<Server> getAllServersSortedById() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
         List<Server> servers = getAllServers();
 
         // sort the list of servers by id
         Collections.sort(servers, SERVER_UUID_COMPARATOR);
+
+        LOG.trace("getAllServersSortedById() took: {}", stopwatch);
 
         return servers;
     }
@@ -82,21 +93,23 @@ public class ServerServiceImpl implements ServerService {
      */
     @Override
     public Server getServerById(String serverId) {
-        UUID id;
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         try {
-            id = UUID.fromString(serverId);
+            UUID id = UUID.fromString(serverId);
+
+            Server server = serverDao.getServerById(id);
+
+            if (null == server) {
+                throw new ResourceNotFoundException("Server not found with identifier: " + serverId);
+            }
+
+            return server;
         } catch (IllegalArgumentException iae) {
             throw new BadRequestException("Invalid server identifier: " + serverId);
+        } finally {
+            LOG.trace("getServerById(String) took: {}", stopwatch);
         }
-
-        Server server = serverDao.getServerById(id);
-
-        if (null == server) {
-            throw new ResourceNotFoundException("Server not found with identifier: " + serverId);
-        }
-
-        return server;
     }
 
     /**
@@ -110,6 +123,8 @@ public class ServerServiceImpl implements ServerService {
      */
     @Override
     public Server createServer(Server server) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
         // validate the request (this will throw an exception if the request is invalid)
         server.validateAsCreateRequest();
 
@@ -124,6 +139,8 @@ public class ServerServiceImpl implements ServerService {
         // launch the actual server
         launchServer(server);
 
+        LOG.trace("createServer(Server) took: {}", stopwatch);
+
         return server;
     }
 
@@ -132,20 +149,25 @@ public class ServerServiceImpl implements ServerService {
      */
     @Override
     public void deleteServer(String serverId) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
         Server server = getServerById(serverId);
 
         // we can only destroy servers that are currently running
         if (!ServerState.RUNNING.equals(server.getState())) {
+            LOG.trace("deleteServer(String) took: {}", stopwatch);
             throw new BadRequestException("Only servers in the running state can be destroyed");
         }
 
         // servers take time to go down, so set the state to TERMINATING
+        LOG.debug("Setting {} to TERMINATING", server);
         server.setState(ServerState.TERMINATING);
 
         // persist the server state update to the data store
         serverDao.updateServer(server);
 
         LOG.info("Destroying server: {}", server);
+        LOG.trace("deleteServer(String) took: {}", stopwatch);
 
         // destroy the actual server
         destroyServer(server);
@@ -167,6 +189,8 @@ public class ServerServiceImpl implements ServerService {
                 } catch (InterruptedException e) {
                     // do nothing
                 } finally {
+                    LOG.debug("Setting {} to RUNNING", clonedServer);
+
                     // update server to running
                     clonedServer.setState(ServerState.RUNNING);
                     serverDao.updateServer(clonedServer);
@@ -191,6 +215,8 @@ public class ServerServiceImpl implements ServerService {
                     // simulate the server taking 30 seconds to go down
                     sleep(30_000);
 
+                    LOG.debug("Setting {} to DESTROYED", clonedServer);
+
                     // update server to destroyed
                     clonedServer.setState(ServerState.DESTROYED);
                     serverDao.updateServer(clonedServer);
@@ -199,13 +225,15 @@ public class ServerServiceImpl implements ServerService {
                      * Note: A non-simulated purge shouldn't take up a thread per resource nor be particularly concerned
                      * about specifically waiting 30 seconds to do the purge.  A real purge handler should use just one
                      * thread and occasionally wake up to see which server resources have been in the destroyed state
-                     * for a long enough period of time (configurable, of course) and purge them.
+                     * for a long enough period of time (configurable, of course) and then purge them.
                      */
                     // simulate a purge timer waiting 30 seconds
                     sleep(30_000);
                 } catch (InterruptedException e) {
                     // do nothing
                 } finally {
+                    LOG.info("Purging {} from the system", clonedServer);
+
                     // purge the server from the data store
                     serverDao.deleteServer(clonedServer.getId());
                 }
