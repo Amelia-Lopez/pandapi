@@ -33,19 +33,19 @@ class ServerDocTest extends Specification {
 
     @Unroll
     def "translate Server(#uuid, #name, #cpus, #ram, #diskSpace, #state) to ServerDoc"() {
-        given: "A Server instance"
-        def server = new Server(id: uuid, name: name, cpus: cpus, ram: ram, diskSpace: diskSpace, state: state)
+        given: "a valid server domain object"
+        Server server = new Server(id: uuid, name: name, cpus: cpus, ram: ram, diskSpace: diskSpace, state: state)
 
-        when:
+        when: "it's converted to a document"
         ServerDoc serverDoc = ServerDoc.fromDomainObject(server)
 
-        then:
+        then: "the values all match"
         serverDoc
-        serverDoc.id == server.id
-        serverDoc.name == server.name
-        serverDoc.cpus == server.cpus
-        serverDoc.ram == server.ram
-        serverDoc.diskSpace == server.diskSpace
+        serverDoc.id == uuid
+        serverDoc.name == name
+        serverDoc.cpus == cpus
+        serverDoc.ram == ram
+        serverDoc.diskSpace == diskSpace
         serverDoc.state == stateDoc
 
         where:
@@ -57,13 +57,39 @@ class ServerDocTest extends Specification {
     }
 
     def "null server state throws correct exception"() {
-        given: "A Server instance with a null server state"
+        given: "a server domain object instance with a null server state"
         def server = new Server(id: UUID.randomUUID(), name: 'a', cpus: 1, ram: 1, diskSpace: 1, state: null)
 
-        when:
+        when: "it's converted to a document"
         ServerDoc.fromDomainObject(server)
 
-        then:
+        then: "an exception is thrown"
         thrown(NonCorrespondingValueException)
+    }
+
+    @Unroll
+    def "translate ServerDoc(#uuid, #name, #cpus, #ram, #diskSpace, #stateDoc) to Server"() {
+        given: "a valid server document"
+        ServerDoc doc = new ServerDoc(id: uuid, name: name, cpus: cpus, ram: ram, diskSpace: diskSpace, state: stateDoc)
+
+        when: "it's converted to a domain object"
+        Server server = doc.toDomainObject()
+
+        then: "the values match"
+        server
+        server.id == uuid
+        server.name == name
+        server.cpus == cpus
+        server.ram == ram
+        server.diskSpace == diskSpace
+        server.state == state
+
+        where:
+        name  | cpus | ram | diskSpace | state       | stateDoc  | uuid
+        'web' | 1    | 2   | 6         | BUILDING    | Building  | UUID.randomUUID()
+        'mid' | 2    | 4   | 8         | RUNNING     | Running   | UUID.randomUUID()
+        'db'  | 4    | 8   | 10        | DESTROYED   | Destroyed | UUID.randomUUID()
+        'dat' | 8    | 16  | 20        | DESTROYED   | Destroyed | UUID.randomUUID()
+        'dis' | 16   | 32  | 40        | null        | null      | UUID.randomUUID()
     }
 }
