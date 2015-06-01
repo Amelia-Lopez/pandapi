@@ -15,9 +15,9 @@
   ~  limitations under the License.
   -->
 
-<configuration>
-    <xml fileName="webServer.xml" />
-    <xml fileName="validation.xml" />
-    <xml fileName="dataStore.xml" />
-    <xml fileName="application.xml" />
-</configuration>
+<config>
+    <application>
+        <!-- port to listen on for a server shutdown request -->
+        <shutdownPort>8088</shutdownPort>
+    </application>
+</config>

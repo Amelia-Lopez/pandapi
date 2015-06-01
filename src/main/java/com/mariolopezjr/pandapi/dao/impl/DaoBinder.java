@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 
 /**
  * Injection bindings for all of the DAO classes.  This class will be loaded by the
- * {@link com.mariolopezjr.pandapi.web.application.PandapiWebApplication}.
+ * {@link com.mariolopezjr.pandapi.web.application.PandapiRestServer}.
  * @author Mario Lopez Jr
  * @since 0.0.6
  */

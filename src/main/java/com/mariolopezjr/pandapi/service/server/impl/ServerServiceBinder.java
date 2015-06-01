@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 
 /**
  * Specify our injection bindings for the Server service.  This class will be loaded by the
- * {@link com.mariolopezjr.pandapi.web.application.PandapiWebApplication}.
+ * {@link com.mariolopezjr.pandapi.web.application.PandapiRestServer}.
  * @author Mario Lopez Jr
  * @since 0.0.5
  */
