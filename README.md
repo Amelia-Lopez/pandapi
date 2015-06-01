@@ -93,7 +93,7 @@ Example Response
 ```
 ##### Returns
 * 200 - Returns the list of server resources in the system
-
+  
 #### Create a server
 Building a new server instance can take over 30 seconds.  This endpoint will return immediately with an HTTP Accepted
 status or a Bad Request status.  If the request is accepted, the response will contain the HTTP "Location" header
@@ -142,9 +142,11 @@ Example Response (400 Bad Request)
   : Amount of RAM the server should be built with in gigabytes, minimum of 1
 * diskSpace (required)
   : Amount of disk space on the boot disk for the server in gigabytes, minimum of 1
+  
 ##### Returns
 * 202 - Request was accepted, response will contain the newly created resource with a new unique ID  
-* 400 - Request is invalid, response will contain an error message detailing the issue  
+* 400 - Request is invalid, response will contain an error message detailing the issue
+  
 #### Retrieve a server
 Url: /v1/servers/:id  
   
@@ -168,6 +170,7 @@ Example Response
 ##### Returns
 * 200 - Returns the server resource
 * 404 - A server resource with the specified ID could not be found
+  
 #### Delete a server
 Url: /v1/servers/:id
   
@@ -182,10 +185,9 @@ Example Response (400 Bad Request)
 }
 ```
 ##### Returns
-204 - Indicates the resource was destroyed, there will be no body in the response
-400 - Indicates the resource was not in a valid state for deleting or the specified ID was malformed, server must be in
-the running state to be deleted
-404 - Indicates a resource with the specified ID was not found
+* 204 - Indicates the resource was destroyed, there will be no body in the response
+* 400 - Indicates the resource was not in a valid state for deleting or the specified ID was malformed, server must be in the running state to be deleted
+* 404 - Indicates a resource with the specified ID was not found
 
 ## License
 See the [LICENSE](LICENSE.txt) file for license rights and limitations.
