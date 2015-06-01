@@ -14,7 +14,25 @@
  *  limitations under the License.
  */
 
+// use the current directory
+def logHome = "."
+
 appender("STDOUT", ConsoleAppender) {
+    encoder(PatternLayoutEncoder) {
+        pattern = "%d{HH:mm:ss.SSS} %-5level [%-15thread] %+36logger{36} - %msg%n"
+    }
+}
+
+appender("FILE", RollingFileAppender) {
+    file = "${logHome}/pandapi.log"
+    rollingPolicy(FixedWindowRollingPolicy) {
+        fileNamePattern = "${logHome}/pandapi.%i.log.zip"
+        minIndex = 1
+        maxIndex = 3
+    }
+    triggeringPolicy(SizeBasedTriggeringPolicy) {
+        maxFileSize = "20MB"
+    }
     encoder(PatternLayoutEncoder) {
         pattern = "%d{HH:mm:ss.SSS} %-5level [%-15thread] %+36logger{36} - %msg%n"
     }
@@ -26,4 +44,4 @@ appender("STDOUT", ConsoleAppender) {
  */
 logger("com.mariolopezjr.pandapi", TRACE)
 
-root(INFO, ["STDOUT"])
+root(INFO, ["FILE"])
