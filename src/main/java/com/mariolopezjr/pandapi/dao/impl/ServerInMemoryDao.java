@@ -18,6 +18,7 @@ package com.mariolopezjr.pandapi.dao.impl;
 
 import com.mariolopezjr.pandapi.dao.ServerDao;
 import com.mariolopezjr.pandapi.data.server.Server;
+import com.mariolopezjr.pandapi.exception.InternalException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,7 +80,7 @@ public class ServerInMemoryDao implements ServerDao {
         Collection<Server> servers = dataStore.values();
         List<Server> clonedServers = new ArrayList<>(servers.size());
 
-        // clone each instance to prevent client code from directly writing to the in-memory data store
+        // prevent the calling class from being able to manipulate the object in the data store directly
         for (Server server : servers) {
             clonedServers.add(server.clone());
         }
@@ -92,7 +93,14 @@ public class ServerInMemoryDao implements ServerDao {
      */
     @Override
     public Server getServerById(UUID serverId) {
-        return dataStore.get(serverId);
+        Server result = dataStore.get(serverId);
+
+        if (result != null) {
+            // prevent the calling class from being able to manipulate the object in the data store directly
+            result = result.clone();
+        }
+
+        return result;
     }
 
     /**
@@ -100,23 +108,33 @@ public class ServerInMemoryDao implements ServerDao {
      */
     @Override
     public Server createServer(Server server) {
+        if (server.getId() != null) {
+            // only the service should be calling the DAO directly, but in case someone else tries...
+            throw new InternalException(
+                    "New server resources get an ID from the DAO, but this server came in with an ID already: " + server);
+        }
+
+        // prevent the calling class from being able to manipulate the object in the data store directly
+        Server clonedServer = server.clone();
         boolean serverCreated = false;
 
         while (!serverCreated) {
             UUID id = UUID.randomUUID();
+            clonedServer.setId(id);
 
             // putIfAbsent will return null if the server was successfully persisted or it'll return the existing
             // server if the UUID was already in use.  In theory it should never happen.  In theory...
-            Server existingServer = dataStore.putIfAbsent(id, server);
+            Server existingServer = dataStore.putIfAbsent(id, clonedServer);
 
             if (null == existingServer) {
-                // server resource was successfully persisted, let's set its new id
                 serverCreated = true;
-                server.setId(id);
             }
         }
 
-        return server;
+        // prevent the calling class from being able to manipulate the object in the data store directly
+        clonedServer = clonedServer.clone();
+
+        return clonedServer;
     }
 
     /**
@@ -124,8 +142,11 @@ public class ServerInMemoryDao implements ServerDao {
      */
     @Override
     public boolean updateServer(Server server) {
+        // prevent the calling class from being able to manipulate the object in the data store directly
+        Server clonedServer = server.clone();
+
         // the resource will only be updated if the resource already existed
-        Server previousValue = dataStore.replace(server.getId(), server);
+        Server previousValue = dataStore.replace(clonedServer.getId(), clonedServer);
 
         // return false if there was no previous value (which means nothing was updated)
         return previousValue != null;
