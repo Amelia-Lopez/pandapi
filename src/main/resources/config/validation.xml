@@ -20,6 +20,7 @@
         <server>
             <create>
                 <fields>
+                    <!-- This is currently not being used yet! -->
                     <name required="true" />
                     <cpus required="true" min="1" max="4096" />
                     <ram required="true" min="1" max="4096" />

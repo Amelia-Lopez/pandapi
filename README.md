@@ -15,7 +15,9 @@ gradle clean build
 java -jar build/libs/pandapi.jar  
 ```
   
-Hit an endpoint:  
+The startup and shutdown logs go to STDOUT, and all of the other logs go to the file 'pandapi.log' in the current directory.  
+  
+To create and retrieve the list of servers:  
 ```console
 curl -X "POST" "http://localhost:8080/v1/servers" \
     -H "Content-Type: application/json" \
