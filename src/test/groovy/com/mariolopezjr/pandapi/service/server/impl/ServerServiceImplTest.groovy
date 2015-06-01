@@ -18,7 +18,11 @@ package com.mariolopezjr.pandapi.service.server.impl
 
 import com.mariolopezjr.pandapi.dao.ServerDao
 import com.mariolopezjr.pandapi.data.server.Server
+import com.mariolopezjr.pandapi.data.server.ServerState
 import com.mariolopezjr.pandapi.data.server.ServerUtility
+import com.mariolopezjr.pandapi.exception.BadRequestException
+import com.mariolopezjr.pandapi.exception.ResourceNotFoundException
+import spock.lang.IgnoreRest
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -78,5 +82,127 @@ class ServerServiceImplTest extends Specification {
         1 * serverDao.allServers >> data
         response != originalData
         response == originalData.sort()
+    }
+
+    def "retrieve server by valid id successfully"() {
+        given: "a valid id"
+        UUID id = UUID.randomUUID()
+
+        when: "the service is called to retrieve the server"
+        Server response = codeUnderTest.getServerById(id.toString())
+
+        then: "we get the server successfully"
+        notThrown(Exception)
+        1 * serverDao.getServerById(id) >> new Server()
+        response
+    }
+
+    def "retrieve server by malformed id unsuccessfully"() {
+        given: "a malformed id"
+        String id = "invalid_id"
+
+        when: "the service is called to retrieve the server"
+        codeUnderTest.getServerById(id)
+
+        then: "it fails"
+        thrown(BadRequestException)
+    }
+
+    def "retrieve server by non-existent valid id unsuccessfully"() {
+        given: "a non-existent valid id"
+        UUID id = UUID.randomUUID()
+
+        when: "the service is called to retrieve the server"
+        codeUnderTest.getServerById(id.toString())
+
+        then: "it fails"
+        thrown(ResourceNotFoundException)
+        1 * serverDao.getServerById(id)
+    }
+
+    /**
+     * Test: Create a new server using the service.
+     * There are other things going on in the createServer method, but they happen over time.  It would take way too
+     * long to test it in a unit test, so let the functional tests verify that behavior.
+     */
+    def "create a new server"() {
+        given: "a valid request server"
+        Server request = Mock(Server)  // mocking a POJO  ಠ_ಠ
+
+        when: "the service is called to create the server"
+        Server response = codeUnderTest.createServer(request)
+
+        then: "the new server as a state of BUILDING"
+        1 * request.validateAsCreateRequest()
+        1 * request.setState(ServerState.BUILDING)
+        1 * serverDao.createServer(request) >> request
+        response == request
+    }
+
+    /**
+     * Test: Delete an existing server using the service.
+     * There are other things going on in the deleteServer method, but they happen over time.  It would take way too
+     * long to test it in a unit test, so let the functional tests verify that behavior.
+     */
+    def "delete a server"() {
+        given: "a valid id"
+        UUID id = UUID.randomUUID()
+
+        and: "a valid server"
+        Server existingServer = new Server(id: id, state: ServerState.RUNNING, name: 'a', cpus: 1, ram: 1, diskSpace: 1)
+        Server updatedServer = existingServer.clone()
+        updatedServer.state = ServerState.TERMINATING
+
+        when: "the service is called to delete the server"
+        codeUnderTest.deleteServer(id.toString())
+
+        then: "the server is queried and updated to a terminating state"
+        1 * serverDao.getServerById(id) >> existingServer
+        1 * serverDao.updateServer(updatedServer)
+    }
+
+    @Unroll
+    def "delete a server in the '#state' state unsuccessfully"() {
+        given: "a valid id"
+        UUID id = UUID.randomUUID()
+
+        and: "a server in an invalid state for deletion"
+        Server server = new Server(id: id, state: state)
+
+        when: "the service is called to delete the server"
+        codeUnderTest.deleteServer(id.toString())
+
+        then: "it fails with a bad request"
+        thrown(BadRequestException)
+        1 * serverDao.getServerById(id) >> server
+
+        where:
+        state                   | _
+        ServerState.BUILDING    | _
+        ServerState.TERMINATING | _
+        ServerState.DESTROYED   | _
+    }
+
+    def "delete a server using a malformed id unsuccessfully"() {
+        given: "a malformed id"
+        String id = "invalid_id"
+
+        when: "the service is called to delete the server"
+        codeUnderTest.deleteServer(id)
+
+        then: "it fails"
+        thrown(BadRequestException)
+    }
+
+    def "delete a non-existent server with a valid id unsuccessfully"() {
+        given: "a non-existent valid id"
+        UUID id = UUID.randomUUID()
+
+        when: "the service is called to delete the server"
+        codeUnderTest.deleteServer(id.toString())
+
+        then: "it fails"
+        thrown(ResourceNotFoundException)
+        1 * serverDao.getServerById(id)
     }
 }

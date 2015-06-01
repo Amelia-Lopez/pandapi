@@ -98,6 +98,7 @@ Example Response
 Building a new server instance can take over 30 seconds.  This endpoint will return immediately with an HTTP Accepted
 status or a Bad Request status.  If the request is accepted, the response will contain the HTTP "Location" header
 containing the URI of the new resource (that can be used to check on the resource's state).  
+  
 Url: /v1/servers  
   
 Example Request  

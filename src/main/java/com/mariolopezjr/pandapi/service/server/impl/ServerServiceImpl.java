@@ -101,6 +101,12 @@ public class ServerServiceImpl implements ServerService {
 
     /**
      * {@inheritDoc}
+     *
+     * This method has a few issues that make it difficult to test.<br/>
+     * 1. A more generic validator should be created (and mockable)
+     * 2. A new Server instance should be created to set the state
+     * 3. A new Server instance should be used for the DAO response, not the argument
+     * 4. The launch server simulation would be easier to test if it were in another class
      */
     @Override
     public Server createServer(Server server) {
