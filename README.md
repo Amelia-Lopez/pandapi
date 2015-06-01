@@ -69,7 +69,7 @@ Example Request
 GET /v1/servers
 ```
 Example Response  
-```
+```JSON
 {
   "servers": [
     {
@@ -104,7 +104,7 @@ Example Request
 ```
 POST /v1/servers
 ```
-```
+```JSON
 {
   "server": {
     "name": "webServer",
@@ -115,7 +115,7 @@ POST /v1/servers
 }
 ```
 Example Response (202 Accepted)  
-```
+```JSON
 {
   "server": {
     "id": "aea4f0fd-2f70-427d-b026-fec789984fe4",
@@ -128,7 +128,7 @@ Example Response (202 Accepted)
 }
 ```
 Example Response (400 Bad Request)  
-```
+```JSON
 {
   "error": "Name must be specified, Number of CPUs should be 1 or higher"
 }
@@ -153,7 +153,7 @@ Example Request
 GET /v1/servers/4e0b19f0-ef4a-4de6-b3a7-4dd74d6a39bd
 ```
 Example Response
-```
+```JSON
 {
   "server": {
     "cpus": 4,
@@ -176,7 +176,7 @@ Example Request
 DELETE /v1/servers/4e0b19f0-ef4a-4de6-b3a7-4dd74d6a39bd
 ```
 Example Response (400 Bad Request)
-```
+```JSON
 {
   "error": "Only servers in the running state can be destroyed"
 }
