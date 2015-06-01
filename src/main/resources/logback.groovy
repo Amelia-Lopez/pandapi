@@ -43,5 +43,6 @@ appender("FILE", RollingFileAppender) {
  * Valid log levels are: OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL
  */
 logger("com.mariolopezjr.pandapi", TRACE)
+logger("com.mariolopezjr.pandapi.web.application", TRACE, ["STDOUT"])
 
 root(INFO, ["FILE"])
