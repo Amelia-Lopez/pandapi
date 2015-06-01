@@ -15,7 +15,7 @@
  */
 
 /**
- * Server specific service code.
+ * Server specific business logic.
  * @author Mario Lopez Jr
  * @since 0.0.5
  */

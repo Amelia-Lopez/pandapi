@@ -29,7 +29,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Jersey mapper to map a thrown {@link InternalException} to a 400 status.
+ * Jersey mapper to map a thrown {@link InternalException} to a 400 status.  The details of the error
+ * will be logged, but the client will only get a generic "Internal Server Error" message to prevent
+ * sensitive details from getting out.
  * @author Mario Lopez Jr
  * @since 0.0.7
  */

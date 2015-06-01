@@ -15,7 +15,7 @@
  */
 
 /**
- * Classes containing RESTful API specific code including HTTP Paths, operations, and content types.  This
+ * Classes containing RESTful API specific code including HTTP paths, operations, and content types.  This
  * package should not contain any business logic.
  * @author Mario Lopez Jr
  * @since 0.0.1

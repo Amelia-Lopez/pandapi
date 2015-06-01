@@ -47,7 +47,7 @@ public class PandapiWebApplication {
 
     /**
      * Entry point for the application.  Sets up an HTTP server on the configured port.
-     * @param args {@link String[]} parameter is ignored
+     * @param args {@link String}[] parameter is ignored
      * @throws Exception If Jetty fails to start or is interrupted.
      */
     public static void main(String[] args) throws Exception {
