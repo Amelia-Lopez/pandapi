@@ -19,5 +19,8 @@
     <application>
         <!-- port to listen on for a server shutdown request -->
         <shutdownPort>8088</shutdownPort>
+
+        <!-- the command to run this application, used in the help output -->
+        <command>java -jar pandapi.jar</command>
     </application>
 </config>

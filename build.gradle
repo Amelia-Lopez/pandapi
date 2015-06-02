@@ -143,6 +143,9 @@ dependencies {
     runtime "ch.qos.logback:logback-core:$logbackVersion"
     runtime "org.codehaus.groovy:groovy:$groovyVersion"
 
+    // command line option parsing
+    compile 'commons-cli:commons-cli:1.3'
+
     // spock
     testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
     testRuntime 'cglib:cglib-nodep:3.1'

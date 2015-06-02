@@ -33,7 +33,10 @@ curl -X "POST" "http://localhost:8080/v1/servers" \
 curl -X "GET" "http://localhost:8080/v1/servers"
 ```
   
-To stop the server, kill the process (e.g. using control-c).
+To stop the server, run:
+```console
+java -jar build/libs/pandapi.jar -stop  
+```
 
 ## Requirements
 * [JDK 7](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)
@@ -48,7 +51,7 @@ gradle clean
 ```
 
 ### Build an Executable JAR
-To build the pandapi.jar (written to $repo/build/libs) with all of the necessary dependencies included:
+To build the pandapi.jar (written to repo dir: build/libs) with all of the necessary dependencies included:
   
 ```console
 gradle build  
@@ -76,15 +79,20 @@ gradle idea
 ```
 
 ## Running
+Use the Java launcher to run the JAR.  The built JAR is located in repository directory: build/libs.  If no option
+is passed in, the default action is to start the server.  
+
 ### Start the Server
-Use the Java launcher to run the JAR.  The built JAR is located in $repo/build/libs.
   
 ```console
-java -jar pandapi.jar  
+java -jar pandapi.jar -start  
 ```
 
 ### Stop the Server
-If you ran the above command, simply press Control-C to gracefully stop the server.
+
+```console
+java -jar pandapi.jar -stop  
+```
 
 ## API
 ### Servers
