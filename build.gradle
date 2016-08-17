@@ -2,8 +2,8 @@ apply plugin: 'java'    // builds production code, produces a JAR
 apply plugin: 'groovy'  // build and run test code
 apply plugin: 'idea'    // build IntelliJ project files
 
-// support Java 7+
-sourceCompatibility = 1.7
+// support Java 8
+sourceCompatibility = 1.8
 
 /*********************************************
  *                    JAR                    *
@@ -117,7 +117,7 @@ repositories {
 def jettyVersion = '9.2.10.v20150310'
 def jerseyVersion = '2.17'
 def logbackVersion = '1.1.3'
-def groovyVersion = '2.4.3'
+def groovyVersion = '2.4.7'
 
 // application dependencies (must go after all source sets are defined)
 dependencies {

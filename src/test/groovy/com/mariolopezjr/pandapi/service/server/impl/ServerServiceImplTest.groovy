@@ -127,14 +127,13 @@ class ServerServiceImplTest extends Specification {
      */
     def "create a new server"() {
         given: "a valid request server"
-        Server request = Mock(Server)  // mocking a POJO  ಠ_ಠ
+        Server request = new Server(name: 'valid1', cpus: 1, ram: 1, diskSpace: 1)
 
         when: "the service is called to create the server"
         Server response = codeUnderTest.createServer(request)
 
         then: "the new server as a state of BUILDING"
-        1 * request.validateAsCreateRequest()
-        1 * request.setState(ServerState.BUILDING)
+        response.state == ServerState.BUILDING
         1 * serverDao.createServer(request) >> request
         response == request
     }
